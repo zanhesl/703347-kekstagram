@@ -15,7 +15,15 @@ var usersComments = [
 
 var usersName = ['Акакий', 'Зигмунд', 'Апполинарий', 'Дормидонт', 'Сигизмунд', 'Феофан'];
 
+// Функция получающая случайный элементмассива
+
+var getRandomElement = function (array) {
+  var element = Math.floor(Math.random() * ((array.length) - 0)) + 0;
+  return array[element];
+};
+
 // Создаём объект с данными для комментариев
+
 var comments = [];
 
 var getComments = function (count) {
@@ -23,14 +31,13 @@ var getComments = function (count) {
   for (var i = 0; i < count; i++) {
     var comment = {
       avatar: 'img/avatar-' + getRandomInt(1, 6) + '.svg',
-      message: usersComments[getRandomInt(0, 5)],
-      name: usersName[getRandomInt(0, 5)]
+      message: getRandomElement(usersComments),
+      name: getRandomElement(usersName)
     };
+    comments.push(comment);
   }
-  comments.push(comment);
   return comments;
 };
-
 
 // Создаем массив объектов с даннми описывающими фото
 
@@ -41,13 +48,12 @@ var getObjects = function (quantity) {
     var object = {
       url: 'photos/' + i + '.jpg',
       like: getRandomInt(15, 200),
-      comments: getComments(2),
+      comments: getComments(6),
       description: 'Тестим новую камеру!'
     };
 
     cardsData.push(object);
   }
-  return cardsData;
 };
 
 getObjects(25);
@@ -65,15 +71,12 @@ var createPictureElement = function (number) {
 
   for (var i = 0; i < number; i++) {
 
-    var picturesItems = document.createElement('div');
-
     var pictureElement = picture.cloneNode(true);
     pictureElement.querySelector('.picture__img').src = cardsData[i].url;
     pictureElement.querySelector('.picture__likes').textContent = cardsData[i].like;
-    pictureElement.querySelector('.picture__comments').textContent = cardsData[i].comments[i].message;
+    pictureElement.querySelector('.picture__comments').textContent = cardsData[i].comments[i].length;
 
-    picturesItems.appendChild(pictureElement);
-    fragment.appendChild(picturesItems);
+    fragment.appendChild(pictureElement);
   }
   pictureListElement.appendChild(fragment);
 };
@@ -100,21 +103,20 @@ var createCommentElement = function (number) {
   commentListItems.appendChild(fragment);
 };
 
-createCommentElement(getRandomInt(0, 5));
-
 // Показываем большое фото
 
-var getBigPicture = function () {
+var getBigPicture = function (item) {
 
   var userPicture = document.querySelector('.big-picture');
   userPicture.classList.remove('hidden');
-  userPicture.querySelector('img').src = cardsData[0].url;
-  userPicture.querySelector('.likes-count').textContent = cardsData[0].like;
-  userPicture.querySelector('.comments-count').textContent = cardsData[0].comments.length;
-  userPicture.querySelector('.social__caption').textContent = cardsData[0].description;
+  userPicture.querySelector('img').src = item.url;
+  userPicture.querySelector('.likes-count').textContent = item.like;
+  userPicture.querySelector('.comments-count').textContent = item.comments.length;
+  userPicture.querySelector('.social__caption').textContent = item.description;
+  createCommentElement(item.comments.length);
 };
 
-getBigPicture();
+getBigPicture(cardsData[0]);
 
 var commentCount = document.querySelector('.social__comment-count');
 var commentLoad = document.querySelector('.comments-loader');
