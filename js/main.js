@@ -24,9 +24,8 @@ var getRandomElement = function (array) {
 
 // Создаём объект с данными для комментариев
 
-var comments = [];
-
 var getComments = function (count) {
+  var comments = [];
 
   for (var i = 0; i < count; i++) {
     var comment = {
@@ -74,7 +73,7 @@ var createPictureElement = function (number) {
     var pictureElement = picture.cloneNode(true);
     pictureElement.querySelector('.picture__img').src = cardsData[i].url;
     pictureElement.querySelector('.picture__likes').textContent = cardsData[i].like;
-    pictureElement.querySelector('.picture__comments').textContent = cardsData[i].comments[i].length;
+    pictureElement.querySelector('.picture__comments').textContent = cardsData[i].comments.length;
 
     fragment.appendChild(pictureElement);
   }
