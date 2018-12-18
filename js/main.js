@@ -1,5 +1,8 @@
 'use strict';
 
+var ESC_KEYCODE = 27;
+var QUANTITY_ELEMENTS = 25;
+
 var getRandomInt = function (min, max) {
   return Math.floor(Math.random() * ((max + 1) - min)) + min;
 };
@@ -15,10 +18,10 @@ var usersComments = [
 
 var usersName = ['Акакий', 'Зигмунд', 'Апполинарий', 'Дормидонт', 'Сигизмунд', 'Феофан'];
 
-// Функция получающая случайный элементмассива
+// Функция получающая случайный элемент массива
 
 var getRandomElement = function (array) {
-  var element = Math.floor(Math.random() * ((array.length) - 0)) + 0;
+  var element = Math.floor(Math.random() * array.length);
   return array[element];
 };
 
@@ -55,7 +58,7 @@ var getObjects = function (quantity) {
   }
 };
 
-getObjects(25);
+getObjects(QUANTITY_ELEMENTS);
 
 // Создаем элементы для маленьких фото в разметке
 
@@ -80,7 +83,7 @@ var createPictureElement = function (number) {
   pictureListElement.appendChild(fragment);
 };
 
-createPictureElement(25);
+createPictureElement(cardsData.length);
 
 // Создаём элементы для комментариев
 
@@ -104,10 +107,12 @@ var createCommentElement = function (number) {
 
 // Показываем большое фото
 
+var userPicture = document.querySelector('.big-picture');
+
 var getBigPicture = function (item) {
 
-  var userPicture = document.querySelector('.big-picture');
   userPicture.classList.remove('hidden');
+  document.addEventListener('keydown', onBigPictureEscPress);
   userPicture.querySelector('img').src = item.url;
   userPicture.querySelector('.likes-count').textContent = item.like;
   userPicture.querySelector('.comments-count').textContent = item.comments.length;
@@ -115,10 +120,127 @@ var getBigPicture = function (item) {
   createCommentElement(item.comments.length);
 };
 
-getBigPicture(cardsData[0]);
+var pictureItems = document.querySelectorAll('.picture');
+
+var addPictureClickHandler = function (pictureItem, dataCard) {
+  pictureItem.addEventListener('click', function () {
+    getBigPicture(dataCard);
+  });
+};
+
+for (var i = 0; i < pictureItems.length; i++) {
+  addPictureClickHandler(pictureItems[i], cardsData[i]);
+}
+
+// Закрываем большое фото
+
+var bigPictureCansel = document.querySelector('#picture-cancel');
+
+var onBigPictureEscPress = function (evt) {
+  if (evt.keyCode === ESC_KEYCODE) {
+    closeBigPicture();
+  }
+};
+
+var closeBigPicture = function () {
+  userPicture.classList.add('hidden');
+  document.removeEventListener('keydown', onBigPictureEscPress);
+};
+
+bigPictureCansel.addEventListener('click', function () {
+  closeBigPicture();
+});
+
+// прячем блоки счётчика комментариев и загрузки новых комментариев
 
 var commentCount = document.querySelector('.social__comment-count');
 var commentLoad = document.querySelector('.comments-loader');
 
 commentCount.classList.add('visually-hidden');
 commentLoad.classList.add('visually-hidden');
+
+// открываем и закрываем форму редактирования изображения
+
+var uploadFile = document.querySelector('#upload-file');
+var uploadOverlay = document.querySelector('.img-upload__overlay');
+var uploadFileClose = uploadOverlay.querySelector('#upload-cancel');
+
+var onUploadPopupEscPress = function (evt) {
+  if (evt.keyCode === ESC_KEYCODE) {
+    closeUploadPopup();
+  }
+};
+
+var openUploadPopup = function () {
+  uploadOverlay.classList.remove('hidden');
+  document.addEventListener('keydown', onUploadPopupEscPress);
+};
+
+var closeUploadPopup = function () {
+  uploadOverlay.classList.add('hidden');
+  document.removeEventListener('keydown', onUploadPopupEscPress);
+  preview.setAttribute('class', 'img-upload__preview');
+  uploadFile.value = '';
+};
+
+uploadFile.addEventListener('change', function () {
+  openUploadPopup();
+});
+
+uploadFileClose.addEventListener('click', function () {
+  closeUploadPopup();
+});
+
+// Применение эффекта для изображения (ползунок)
+
+// Функции для эффектов
+/*
+var getChrome = function (grayScale) {
+  preview.style.filter = 'grayscale(' + grayScale + ')';
+};
+
+var getSepia = function (sepia) {
+  preview.style.filter = 'sepia(' + sepia + ')';
+};
+
+var getMarvin = function (invert) {
+  preview.style.filter = 'invert(' + invert + ')';
+};
+
+var getPhobos = function (blur) {
+  preview.style.filter = 'blur(' + blur + ')';
+};
+
+var getHeat = function (brightness) {
+  preview.style.filter = 'brightness(' + brightness + ')';
+};
+
+// Объект с вызовами фенкций для эффектов
+
+var effectsDirectory = {
+  chrome: getChrom(effectLevel),
+  sepia: getSepia(effectLevel),
+  marvin: getMarvin(effectLevel * 100),
+  phobos: getPhobos(effectLevel * 5),
+  heat: getHeat(effectLevel * 3)
+}; */
+// Применение эффекта для изображения (иконки)
+
+var effectNames = ['none', 'chrome', 'sepia', 'marvin', 'phobos', 'heat'];
+var preview = document.querySelector('.img-upload__preview');
+var effectList = document.querySelectorAll('.effects__radio');
+
+var addEffectListClickHandler = function (effects, effectName) {
+  effectList.addEventListener('click', function () {
+    preview.setAttribute('class', 'img-upload__preview');
+    preview.classList.add('effects__preview--' + effectName);
+  });
+
+/* sliderEffectLevel.addEventListener('mouseup', function () {
+  var effectLevel = offsetLeft / offsetWidthb * 100;
+}); */
+};
+
+for (var j = 0; j < effectList.length; j++) {
+  addEffectListClickHandler(effectList[j], effectNames[j]);
+}
