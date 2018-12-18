@@ -231,7 +231,7 @@ var preview = document.querySelector('.img-upload__preview');
 var effectList = document.querySelectorAll('.effects__radio');
 
 var addEffectListClickHandler = function (effects, effectName) {
-  effectList.addEventListener('click', function () {
+  effects.addEventListener('click', function () {
     preview.setAttribute('class', 'img-upload__preview');
     preview.classList.add('effects__preview--' + effectName);
   });
