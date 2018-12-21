@@ -2,6 +2,11 @@
 
 var ESC_KEYCODE = 27;
 var QUANTITY_ELEMENTS = 25;
+var ScaleValue = {
+  MIN: 25,
+  MAX: 100,
+  STEP: 25
+};
 
 var getRandomInt = function (min, max) {
   return Math.floor(Math.random() * ((max + 1) - min)) + min;
@@ -18,13 +23,6 @@ var usersComments = [
 
 var usersName = ['Акакий', 'Зигмунд', 'Апполинарий', 'Дормидонт', 'Сигизмунд', 'Феофан'];
 
-// Функция получающая случайный элемент массива
-
-var getRandomElement = function (array) {
-  var element = Math.floor(Math.random() * array.length);
-  return array[element];
-};
-
 // Создаём объект с данными для комментариев
 
 var getComments = function (count) {
@@ -33,8 +31,8 @@ var getComments = function (count) {
   for (var i = 0; i < count; i++) {
     var comment = {
       avatar: 'img/avatar-' + getRandomInt(1, 6) + '.svg',
-      message: getRandomElement(usersComments),
-      name: getRandomElement(usersName)
+      message: usersComments[getRandomInt(1, usersComments.length)],
+      name: usersName[getRandomInt(1, usersName.length)]
     };
     comments.push(comment);
   }
@@ -270,18 +268,12 @@ var smallerButton = document.querySelector('.scale__control--smaller');
 var biggerButton = document.querySelector('.scale__control--bigger');
 var scaleControlValue = document.querySelector('.scale__control--value');
 
-var scaleValue = {
-  min: 25,
-  max: 100,
-  step: 25
-};
-
-scaleControlValue.value = scaleValue.max + '%';
+scaleControlValue.value = ScaleValue.MAX + '%';
 
 var scalePhoto = function (directionScale) {
   var currentScale = parseInt(scaleControlValue.value, 10);
-  currentScale = currentScale + (scaleValue.step * directionScale);
-  if (currentScale >= scaleValue.min && currentScale <= scaleValue.max) {
+  currentScale = currentScale + (ScaleValue.STEP * directionScale);
+  if (currentScale >= ScaleValue.MIN && currentScale <= ScaleValue.MAX) {
     scaleControlValue.value = currentScale + '%';
     preview.style.transform = 'scale(' + currentScale / 100 + ')';
   }
