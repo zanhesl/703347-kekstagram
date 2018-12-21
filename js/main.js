@@ -1,5 +1,8 @@
 'use strict';
 
+var ESC_KEYCODE = 27;
+var QUANTITY_ELEMENTS = 25;
+
 var getRandomInt = function (min, max) {
   return Math.floor(Math.random() * ((max + 1) - min)) + min;
 };
@@ -15,10 +18,10 @@ var usersComments = [
 
 var usersName = ['Акакий', 'Зигмунд', 'Апполинарий', 'Дормидонт', 'Сигизмунд', 'Феофан'];
 
-// Функция получающая случайный элементмассива
+// Функция получающая случайный элемент массива
 
 var getRandomElement = function (array) {
-  var element = Math.floor(Math.random() * ((array.length) - 0)) + 0;
+  var element = Math.floor(Math.random() * array.length);
   return array[element];
 };
 
@@ -40,7 +43,7 @@ var getComments = function (count) {
 
 // Создаем массив объектов с даннми описывающими фото
 
-var cardsData = [];
+var cards = [];
 
 var getObjects = function (quantity) {
   for (var i = 1; i < quantity + 1; i++) {
@@ -51,11 +54,11 @@ var getObjects = function (quantity) {
       description: 'Тестим новую камеру!'
     };
 
-    cardsData.push(object);
+    cards.push(object);
   }
 };
 
-getObjects(25);
+getObjects(QUANTITY_ELEMENTS);
 
 // Создаем элементы для маленьких фото в разметке
 
@@ -71,16 +74,16 @@ var createPictureElement = function (number) {
   for (var i = 0; i < number; i++) {
 
     var pictureElement = picture.cloneNode(true);
-    pictureElement.querySelector('.picture__img').src = cardsData[i].url;
-    pictureElement.querySelector('.picture__likes').textContent = cardsData[i].like;
-    pictureElement.querySelector('.picture__comments').textContent = cardsData[i].comments.length;
+    pictureElement.querySelector('.picture__img').src = cards[i].url;
+    pictureElement.querySelector('.picture__likes').textContent = cards[i].like;
+    pictureElement.querySelector('.picture__comments').textContent = cards[i].comments.length;
 
     fragment.appendChild(pictureElement);
   }
   pictureListElement.appendChild(fragment);
 };
 
-createPictureElement(25);
+createPictureElement(cards.length);
 
 // Создаём элементы для комментариев
 
@@ -94,8 +97,8 @@ var createCommentElement = function (number) {
 
   for (var i = 0; i < number; i++) {
     var commentElement = liForComment.cloneNode(true);
-    commentElement.querySelector('.social__picture').src = cardsData[0].comments[i].avatar;
-    commentElement.querySelector('.social__text').textContent = cardsData[0].comments[i].message;
+    commentElement.querySelector('.social__picture').src = cards[0].comments[i].avatar;
+    commentElement.querySelector('.social__text').textContent = cards[0].comments[i].message;
 
     fragment.appendChild(commentElement);
   }
@@ -104,10 +107,12 @@ var createCommentElement = function (number) {
 
 // Показываем большое фото
 
+var userPicture = document.querySelector('.big-picture');
+
 var getBigPicture = function (item) {
 
-  var userPicture = document.querySelector('.big-picture');
   userPicture.classList.remove('hidden');
+  document.addEventListener('keydown', onBigPictureEscPress);
   userPicture.querySelector('img').src = item.url;
   userPicture.querySelector('.likes-count').textContent = item.like;
   userPicture.querySelector('.comments-count').textContent = item.comments.length;
@@ -115,10 +120,178 @@ var getBigPicture = function (item) {
   createCommentElement(item.comments.length);
 };
 
-getBigPicture(cardsData[0]);
+var pictureItems = document.querySelectorAll('.picture');
+
+var addPictureClickHandler = function (pictureItem, dataCard) {
+  pictureItem.addEventListener('click', function () {
+    getBigPicture(dataCard);
+  });
+};
+
+for (var i = 0; i < pictureItems.length; i++) {
+  addPictureClickHandler(pictureItems[i], cards[i]);
+}
+
+// Закрываем большое фото
+
+var bigPictureCansel = document.querySelector('#picture-cancel');
+
+var onBigPictureEscPress = function (evt) {
+  if (evt.keyCode === ESC_KEYCODE) {
+    closeBigPicture();
+  }
+};
+
+var closeBigPicture = function () {
+  userPicture.classList.add('hidden');
+  document.removeEventListener('keydown', onBigPictureEscPress);
+};
+
+bigPictureCansel.addEventListener('click', function () {
+  closeBigPicture();
+});
+
+// прячем блоки счётчика комментариев и загрузки новых комментариев
 
 var commentCount = document.querySelector('.social__comment-count');
 var commentLoad = document.querySelector('.comments-loader');
 
 commentCount.classList.add('visually-hidden');
 commentLoad.classList.add('visually-hidden');
+
+// открываем и закрываем форму редактирования изображения
+
+var uploadFile = document.querySelector('#upload-file');
+var uploadOverlay = document.querySelector('.img-upload__overlay');
+var uploadFileClose = uploadOverlay.querySelector('#upload-cancel');
+
+var onUploadPopupEscPress = function (evt) {
+  if (evt.keyCode === ESC_KEYCODE) {
+    closeUploadPopup();
+  }
+};
+
+var openUploadPopup = function () {
+  uploadOverlay.classList.remove('hidden');
+  document.addEventListener('keydown', onUploadPopupEscPress);
+};
+
+var closeUploadPopup = function () {
+  uploadOverlay.classList.add('hidden');
+  document.removeEventListener('keydown', onUploadPopupEscPress);
+  preview.setAttribute('class', 'img-upload__preview');
+  uploadFile.value = '';
+};
+
+uploadFile.addEventListener('change', function () {
+  openUploadPopup();
+});
+
+uploadFileClose.addEventListener('click', function () {
+  closeUploadPopup();
+});
+
+// Применение эффекта для изображения (ползунок)
+
+// Функции для эффектов
+
+var getNone = function () {
+  slider.classList.add('hidden');
+};
+/*
+var getChrome = function (grayScale) {
+  preview.style.filter = 'grayscale(' + grayScale + ')';
+};
+
+var getSepia = function (sepia) {
+  preview.style.filter = 'sepia(' + sepia + ')';
+};
+
+var getMarvin = function (invert) {
+  preview.style.filter = 'invert(' + invert * 100 + ')';
+};
+
+var getPhobos = function (blur) {
+  preview.style.filter = 'blur(' + blur * 5 + ')';
+};
+
+var getHeat = function (brightness) {
+  preview.style.filter = 'brightness(' + (brightness * 2 + 1) + ')';
+};
+
+// Объект с вызовами фенкций для эффектов
+
+var effectsDirectory = {
+  none: getNone,
+  chrome: getChrome,
+  sepia: getSepia,
+  marvin: getMarvin,
+  phobos: getPhobos,
+  heat: getHeat
+};
+*/
+// Применение эффекта для изображения (иконки)
+
+var effectNames = ['none', 'chrome', 'sepia', 'marvin', 'phobos', 'heat'];
+var preview = document.querySelector('.img-upload__preview');
+var effectItems = document.querySelectorAll('.effects__radio');
+var currentFilter;
+var sliderEffectLevel = document.querySelector('.effect-level__pin');
+var slider = document.querySelector('.effect-level');
+// var effectsDirectoryFilter;
+
+var addEffectListClickHandler = function (effects, effectName) {
+  effects.addEventListener('click', function () {
+    if (currentFilter) {
+      preview.classList.remove(currentFilter);
+      slider.classList.remove('hidden');
+    }
+    preview.classList.add('effects__preview--' + effectName);
+    currentFilter = 'effects__preview--' + effectName;
+    // effectsDirectoryFilter = parseInt(effectName, 10);
+    if (effectName === 'none') {
+      getNone();
+    }
+  });
+};
+
+sliderEffectLevel.addEventListener('mouseup', function () {
+// var effectLevel = sliderEffectLevel.offsetLeft / sliderEffectLevel.offsetWidth;
+//  effectsDirectory.effectsDirectoryFilter;
+});
+
+for (var j = 0; j < effectItems.length; j++) {
+  addEffectListClickHandler(effectItems[j], effectNames[j]);
+}
+
+// Изменяем масштаб фото
+
+var smallerButton = document.querySelector('.scale__control--smaller');
+var biggerButton = document.querySelector('.scale__control--bigger');
+var scaleControlValue = document.querySelector('.scale__control--value');
+
+var scaleValue = {
+  min: 25,
+  max: 100,
+  step: 25
+};
+
+scaleControlValue.value = scaleValue.max + '%';
+
+var scalePhoto = function (directionScale) {
+  var currentScale = parseInt(scaleControlValue.value, 10);
+  currentScale = currentScale + (scaleValue.step * directionScale);
+  if (currentScale >= scaleValue.min && currentScale <= scaleValue.max) {
+    scaleControlValue.value = currentScale + '%';
+    preview.style.transform = 'scale(' + currentScale / 100 + ')';
+  }
+};
+
+smallerButton.addEventListener('click', function () {
+  scalePhoto(-1);
+});
+
+biggerButton.addEventListener('click', function () {
+  scalePhoto(1);
+});
+
