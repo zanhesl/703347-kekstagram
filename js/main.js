@@ -31,8 +31,8 @@ var getComments = function (count) {
   for (var i = 0; i < count; i++) {
     var comment = {
       avatar: 'img/avatar-' + getRandomInt(1, 6) + '.svg',
-      message: usersComments[getRandomInt(1, usersComments.length)],
-      name: usersName[getRandomInt(1, usersName.length)]
+      message: usersComments[getRandomInt(0, usersComments.length - 1)],
+      name: usersName[getRandomInt(0, usersName.length - 1)]
     };
     comments.push(comment);
   }
@@ -286,4 +286,80 @@ smallerButton.addEventListener('click', function () {
 biggerButton.addEventListener('click', function () {
   scalePhoto(1);
 });
+
+// Валидация формы
+// если фокус находится в поле ввода хэш-тега, нажатие на Esc не должно приводить к закрытию формы
+
+var hashTagsInput = document.querySelector('.text__hashtags');
+var textDescription = document.querySelector('.text__description');
+
+hashTagsInput.addEventListener('focusin', function () {
+  document.removeEventListener('keydown', onUploadPopupEscPress);
+});
+
+hashTagsInput.addEventListener('focusout', function () {
+  document.addEventListener('keydown', onUploadPopupEscPress);
+});
+
+textDescription.addEventListener('focusin', function () {
+  document.removeEventListener('keydown', onUploadPopupEscPress);
+});
+
+textDescription.addEventListener('focusout', function () {
+  document.addEventListener('keydown', onUploadPopupEscPress);
+});
+
+// Хэш-тэги
+// Функция считающая хэш-тэги
+
+var getCountHashTag = function (text) {
+  var count = 0;
+  var pos = text.indexOf('#');
+
+  while (pos !== -1) {
+    count++;
+    pos = text.indexOf('#', pos + 1);
+  }
+  return count;
+};
+
+// Функция которая ищет одинаковые хэш-тэги
+
+var checkSameElement = function (elements) {
+  var sameElement = false;
+  for (var n = 0; n < elements.length - 1; n++) {
+    var element = elements[n];
+    for (var h = 1; h < elements.length; h++) {
+      if (element === elements[h]) {
+        sameElement = true;
+      }
+    }
+  } return sameElement;
+};
+
+hashTagsInput.addEventListener('input', function () {
+  var hashTagText = hashTagsInput.value.trim();
+  var hashTags = hashTagText.toLowerCase().split(' ');
+  var errorMessage = '';
+  for (var k = 0; k < hashTags.length; k++) {
+    var hashTag = hashTags[k];
+    if (hashTag === '') {
+      errorMessage = '';
+    } else if (hashTag[0] !== '#') {
+      errorMessage = 'Хэш-тег должен начинаться с решетки #';
+    } else if (hashTag.length === 1) {
+      errorMessage = 'Хеш-тег не может состоять только из одной решётки';
+    } else if (hashTag.length > 20) {
+      errorMessage = 'Максимальная длина одного хэш-тега 20 символов, включая решётку';
+    } else if (hashTag.indexOf('#', 1) > 1) {
+      errorMessage = 'Хэштеги должны разделяться пробелами';
+    } else if (getCountHashTag(hashTagText) > 5) {
+      errorMessage = 'Нельзя указать больше пяти хэш-тегов';
+    } else if (checkSameElement(hashTags)) {
+      errorMessage = 'Один и тот же хэш-тег не может быть использован дважды';
+    }
+  }
+  hashTagsInput.setCustomValidity(errorMessage);
+});
+
 
