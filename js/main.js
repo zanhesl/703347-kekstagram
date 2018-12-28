@@ -322,8 +322,8 @@ var getCountHashTag = function (text) {
 
 var removeSameElement = function (elements) {
   var obj = {};
-  for (var i = 0; i < elements.length; i++) {
-    var element = elements[i];
+  for (var u = 0; u < elements.length; u++) {
+    var element = elements[u];
     obj[element] = true; // запомнить строку в виде свойства объекта
   }
   return Object.keys(obj);
