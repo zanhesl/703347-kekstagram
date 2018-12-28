@@ -2,6 +2,8 @@
 
 var ESC_KEYCODE = 27;
 var QUANTITY_ELEMENTS = 25;
+var QUANTITY_HASH_TAG = 5;
+var HASH_TAG_LENGTH = 20;
 var ScaleValue = {
   MIN: 25,
   MAX: 100,
@@ -10,6 +12,13 @@ var ScaleValue = {
 
 var getRandomInt = function (min, max) {
   return Math.floor(Math.random() * ((max + 1) - min)) + min;
+};
+
+// Функция получающая случайный элемент массива
+
+var getRandomElement = function (array) {
+  var element = getRandomInt(0, array.length);
+  return array[element];
 };
 
 var usersComments = [
@@ -31,8 +40,8 @@ var getComments = function (count) {
   for (var i = 0; i < count; i++) {
     var comment = {
       avatar: 'img/avatar-' + getRandomInt(1, 6) + '.svg',
-      message: usersComments[getRandomInt(0, usersComments.length - 1)],
-      name: usersName[getRandomInt(0, usersName.length - 1)]
+      message: getRandomElement(usersComments),
+      name: getRandomElement(usersName)
     };
     comments.push(comment);
   }
@@ -165,7 +174,11 @@ var uploadFileClose = uploadOverlay.querySelector('#upload-cancel');
 
 var onUploadPopupEscPress = function (evt) {
   if (evt.keyCode === ESC_KEYCODE) {
-    closeUploadPopup();
+    if (hashTagsInput !== document.activeElement) {
+      if (textDescription !== document.activeElement) {
+        closeUploadPopup();
+      }
+    }
   }
 };
 
@@ -268,8 +281,6 @@ var smallerButton = document.querySelector('.scale__control--smaller');
 var biggerButton = document.querySelector('.scale__control--bigger');
 var scaleControlValue = document.querySelector('.scale__control--value');
 
-scaleControlValue.value = ScaleValue.MAX + '%';
-
 var scalePhoto = function (directionScale) {
   var currentScale = parseInt(scaleControlValue.value, 10);
   currentScale = currentScale + (ScaleValue.STEP * directionScale);
@@ -293,22 +304,6 @@ biggerButton.addEventListener('click', function () {
 var hashTagsInput = document.querySelector('.text__hashtags');
 var textDescription = document.querySelector('.text__description');
 
-hashTagsInput.addEventListener('focusin', function () {
-  document.removeEventListener('keydown', onUploadPopupEscPress);
-});
-
-hashTagsInput.addEventListener('focusout', function () {
-  document.addEventListener('keydown', onUploadPopupEscPress);
-});
-
-textDescription.addEventListener('focusin', function () {
-  document.removeEventListener('keydown', onUploadPopupEscPress);
-});
-
-textDescription.addEventListener('focusout', function () {
-  document.addEventListener('keydown', onUploadPopupEscPress);
-});
-
 // Хэш-тэги
 // Функция считающая хэш-тэги
 
@@ -325,40 +320,43 @@ var getCountHashTag = function (text) {
 
 // Функция которая ищет одинаковые хэш-тэги
 
-var checkSameElement = function (elements) {
-  var sameElement = false;
-  for (var n = 0; n < elements.length - 1; n++) {
-    var element = elements[n];
-    for (var h = 1; h < elements.length; h++) {
-      if (element === elements[h]) {
-        sameElement = true;
-      }
-    }
-  } return sameElement;
+var removeSameElement = function (elements) {
+  var obj = {};
+  for (var i = 0; i < elements.length; i++) {
+    var element = elements[i];
+    obj[element] = true; // запомнить строку в виде свойства объекта
+  }
+  return Object.keys(obj);
 };
 
 hashTagsInput.addEventListener('input', function () {
   var hashTagText = hashTagsInput.value.trim();
   var hashTags = hashTagText.toLowerCase().split(' ');
   var errorMessage = '';
-  for (var k = 0; k < hashTags.length; k++) {
-    var hashTag = hashTags[k];
-    if (hashTag === '') {
-      errorMessage = '';
-    } else if (hashTag[0] !== '#') {
+  if (getCountHashTag(hashTagText) > QUANTITY_HASH_TAG) {
+    errorMessage = 'Нельзя указать больше пяти хэш-тегов';
+  }
+
+  if (removeSameElement(hashTags).length < hashTags.length) {
+    errorMessage = 'Один и тот же хэш-тег не может быть использован дважды';
+  }
+
+  for (var I = 0; I < hashTags.length; I++) {
+    var hashTag = hashTags[I];
+    if (hashTag[0] !== '#') {
       errorMessage = 'Хэш-тег должен начинаться с решетки #';
     } else if (hashTag.length === 1) {
       errorMessage = 'Хеш-тег не может состоять только из одной решётки';
-    } else if (hashTag.length > 20) {
+    } else if (hashTag.length > HASH_TAG_LENGTH) {
       errorMessage = 'Максимальная длина одного хэш-тега 20 символов, включая решётку';
     } else if (hashTag.indexOf('#', 1) > 1) {
       errorMessage = 'Хэштеги должны разделяться пробелами';
-    } else if (getCountHashTag(hashTagText) > 5) {
-      errorMessage = 'Нельзя указать больше пяти хэш-тегов';
-    } else if (checkSameElement(hashTags)) {
-      errorMessage = 'Один и тот же хэш-тег не может быть использован дважды';
     }
   }
+  if (hashTag === '') {
+    errorMessage = '';
+  }
+
   hashTagsInput.setCustomValidity(errorMessage);
 });
 
