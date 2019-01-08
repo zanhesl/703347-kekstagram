@@ -4,6 +4,12 @@ var ESC_KEYCODE = 27;
 var QUANTITY_ELEMENTS = 25;
 var QUANTITY_HASH_TAG = 5;
 var HASH_TAG_LENGTH = 20;
+var WIDTH_SCALE = 450;
+var BORDERS_OF_BRIGHTNESS = 2 + 1;
+var BORDERS_OF_BLUR = 3;
+var BORDERS_OF_INVERT = 100;
+var EFFECT_LEVEL_MAX = 1;
+var EFFECT_LEVEL_MIN = 0;
 var ScaleValue = {
   MIN: 25,
   MAX: 100,
@@ -184,13 +190,13 @@ var onUploadPopupEscPress = function (evt) {
 
 var openUploadPopup = function () {
   uploadOverlay.classList.remove('hidden');
+  getNone();
   document.addEventListener('keydown', onUploadPopupEscPress);
 };
 
 var closeUploadPopup = function () {
   uploadOverlay.classList.add('hidden');
   document.removeEventListener('keydown', onUploadPopupEscPress);
-  preview.setAttribute('class', 'img-upload__preview');
   uploadFile.value = '';
 };
 
@@ -208,8 +214,11 @@ uploadFileClose.addEventListener('click', function () {
 
 var getNone = function () {
   slider.classList.add('hidden');
+  for (var j = 1; j < effectNames.length - 1; j++) {
+    effectsDirectory[effectNames[j]](EFFECT_LEVEL_MIN);
+  }
 };
-/*
+
 var getChrome = function (grayScale) {
   preview.style.filter = 'grayscale(' + grayScale + ')';
 };
@@ -219,15 +228,15 @@ var getSepia = function (sepia) {
 };
 
 var getMarvin = function (invert) {
-  preview.style.filter = 'invert(' + invert * 100 + ')';
+  preview.style.filter = 'invert(' + invert * BORDERS_OF_INVERT + '%)';
 };
 
 var getPhobos = function (blur) {
-  preview.style.filter = 'blur(' + blur * 5 + ')';
+  preview.style.filter = 'blur(' + blur * BORDERS_OF_BLUR + 'px)';
 };
 
 var getHeat = function (brightness) {
-  preview.style.filter = 'brightness(' + (brightness * 2 + 1) + ')';
+  preview.style.filter = 'brightness(' + (brightness * BORDERS_OF_BRIGHTNESS) + ')';
 };
 
 // Объект с вызовами фенкций для эффектов
@@ -240,7 +249,7 @@ var effectsDirectory = {
   phobos: getPhobos,
   heat: getHeat
 };
-*/
+
 // Применение эффекта для изображения (иконки)
 
 var effectNames = ['none', 'chrome', 'sepia', 'marvin', 'phobos', 'heat'];
@@ -248,32 +257,75 @@ var preview = document.querySelector('.img-upload__preview');
 var effectItems = document.querySelectorAll('.effects__radio');
 var currentFilter;
 var sliderEffectLevel = document.querySelector('.effect-level__pin');
+var sliderEffectDepth = document.querySelector('.effect-level__depth');
+var sliderEffectValue = document.querySelector('.effect-level__value');
+var sliderEffectLine = document.querySelector('.effect-level__line');
 var slider = document.querySelector('.effect-level');
-// var effectsDirectoryFilter;
+var effectsDirectoryFilter;
 
 var addEffectListClickHandler = function (effects, effectName) {
   effects.addEventListener('click', function () {
-    if (currentFilter) {
-      preview.classList.remove(currentFilter);
-      slider.classList.remove('hidden');
-    }
-    preview.classList.add('effects__preview--' + effectName);
+    sliderEffectLevel.style.left = 100 + '%';
+    sliderEffectDepth.style.width = 100 + '%';
+    slider.classList.remove('hidden');
+    preview.classList.remove(currentFilter);
     currentFilter = 'effects__preview--' + effectName;
-    // effectsDirectoryFilter = parseInt(effectName, 10);
-    if (effectName === 'none') {
+    preview.classList.add(currentFilter);
+    effectsDirectoryFilter = effectName;
+    if (effectsDirectoryFilter === 'none') {
       getNone();
+    } else {
+      effectsDirectory[effectsDirectoryFilter](EFFECT_LEVEL_MAX);
     }
   });
 };
 
-sliderEffectLevel.addEventListener('mouseup', function () {
-// var effectLevel = sliderEffectLevel.offsetLeft / sliderEffectLevel.offsetWidth;
-//  effectsDirectory.effectsDirectoryFilter;
-});
-
 for (var j = 0; j < effectItems.length; j++) {
   addEffectListClickHandler(effectItems[j], effectNames[j]);
 }
+
+// Перетаскивание ползунка
+
+sliderEffectLevel.addEventListener('mousedown', function (evt) {
+  evt.preventDefault();
+
+  var startCoords = {
+    x: evt.clientX
+  };
+
+  var onMouseMove = function (moveEvt) {
+    moveEvt.preventDefault();
+
+    var shift = {
+      x: startCoords.x - moveEvt.clientX
+    };
+
+    startCoords = {
+      x: moveEvt.clientX
+    };
+
+    var movePin = sliderEffectLevel.offsetLeft - shift.x;
+    var coordsPin = movePin + 'px';
+
+    if (movePin >= 0 && movePin <= WIDTH_SCALE) {
+      sliderEffectLevel.style.left = coordsPin;
+      sliderEffectDepth.style.width = coordsPin;
+      var effectLevel = sliderEffectLevel.offsetLeft / sliderEffectLine.offsetWidth;
+      effectsDirectory[effectsDirectoryFilter](effectLevel);
+      sliderEffectValue.value = effectLevel * 100;
+    }
+  };
+
+  var onMouseUp = function (upEvt) {
+    upEvt.preventDefault();
+
+    document.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('mouseup', onMouseUp);
+  };
+
+  document.addEventListener('mousemove', onMouseMove);
+  document.addEventListener('mouseup', onMouseUp);
+});
 
 // Изменяем масштаб фото
 
@@ -359,5 +411,3 @@ hashTagsInput.addEventListener('input', function () {
 
   hashTagsInput.setCustomValidity(errorMessage);
 });
-
-
