@@ -45,7 +45,7 @@
 
                   <!-- Изменение размера изображения -->
                   <fieldset class="img-upload__scale  scale">
-                    <button type="button" class="scale__control  scale__control--smaller">Уменьшить</button>
+                    <button type="button" class="scale__control  scale__control--smaller" tabindex="0">Уменьшить</button>
                     <input type="text" class="scale__control  scale__control--value" value="100%" title="Image Scale" name="scale" readonly>
                     <button type="button" class="scale__control  scale__control--bigger">Увеличить</button>
                   </fieldset>
@@ -56,7 +56,7 @@
                   </div>
 
                   <!-- Изменение глубины эффекта, накладываемого на изображение -->
-                  <fieldset class="img-upload__effect-level  effect-level">
+                  <fieldset class="img-upload__effect-level  effect-level hidden">
                     <input class="effect-level__value" type="number" name="effect-level" value="20">
                     <div class="effect-level__line">
                       <div class="effect-level__pin" tabindex="0">Кнопка изменения глубины эффекта фотографии</div>
@@ -155,14 +155,6 @@
           <!-- Комментарии к изображению -->
           <div class="social__comment-count">5 из <span class="comments-count">125</span> комментариев</div>
           <ul class="social__comments">
-            <li class="social__comment">
-              <img class="social__picture" src="img/avatar-4.svg" alt="Аватар комментатора фотографии" width="35" height="35">
-              <p class="social__text">Мега фото! Просто обалдеть. Как вам так удалось?</p>
-            </li>
-            <li class="social__comment">
-              <img class="social__picture" src="img/avatar-3.svg" alt="Аватар комментатора фотографии" width="35" height="35">
-               <p class="social__text">Да это фоташоп!!!!!!!!</p>
-            </li>
           </ul>
 
           <!-- Кнопка для загрузки новой порции комментариев -->
@@ -177,7 +169,7 @@
         </div>
 
         <!-- Кнопка для выхода из полноэкранного просмотра изображения -->
-        <button type="reset" class="big-picture__cancel  cancel" id="picture-cancel">Закрыть</button>
+        <button type="reset" class="big-picture__cancel  cancel" id="picture-cancel" tabindex="0">Закрыть</button>
       </div>
     </section>
   </main>
@@ -214,8 +206,7 @@
       <div class="error__inner">
         <h2 class="error__title">Ошибка загрузки файла</h2>
         <div class="error__buttons">
-          <button type="button" class="error__button">Попробовать снова</button>
-          <button type="button" class="error__button">Загрузить другой файл</button>
+          <button type="button" class="error__button">Закрыть</button>
         </div>
       </div>
     </section>
@@ -236,15 +227,30 @@
     <div class="img-upload__message  img-upload__message--loading">Загружаем...</div>
   </template>
 
-  <script src="js/util.js"></script>
+  <!-- Шаблон комментария к фотографии -->
+  <template id="comments">
+    <li class="social__comment social__comment--text">
+      <img class="social__picture"
+      src="img/avatar-{{случайное число от 1 до 6}}.svg" alt="Аватар комментатора фотографии"
+      width="35" height="35">
+      <p class="social__text">{{текст комментария}}</p>
+    </li>
+  </template>
+
+  <!-- <script src="js/util.js"></script>
   <script src="js/random.js"></script>
   <script src="js/data.js"></script>
   <script src="js/picture.js"></script>
   <script src="js/comment.js"></script>
   <script src="js/preview.js"></script>
   <script src="js/hidden-block.js"></script>
-  <script src="js/form.js"></script>
-  <script src="js/validation-form.js"></script>
-
+  <script src="js/form.js"></script> -->
+  <script src="js/backend.js"></script>
+  <script src="js/validate_form.js"></script>
+  <script src="js/pictures.js"></script>
+  <script src="js/effects.js"></script>
+  <script src="js/pictures_sort.js"></script>
+  <script src="js/debounce.js"></script>
+  <script src="js/scale.js"></script>
 </body>
 </html>
